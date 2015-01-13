@@ -23,6 +23,7 @@ class SullivanTonyItem(scrapy.Item):
     COUNTRY = scrapy.Field()
     STYLE = scrapy.Field()
     YEARBUILD = scrapy.Field()
+    LOTSIZE = scrapy.Field()
     LIVINGAREA = scrapy.Field()
     ROOMS_TOTAL = scrapy.Field()
     ROOMS_BED = scrapy.Field()

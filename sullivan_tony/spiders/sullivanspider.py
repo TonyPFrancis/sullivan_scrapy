@@ -23,19 +23,24 @@ class SullivanSpider(scrapy.Spider):
 
     def parse(self, response):
         item_link = response.selector.xpath("//table[@width='700']/tr/td[@colspan='2']/a/@href").extract()
+        limit = 0
         for item in item_link:
+            webbrowser.open(url=self.base_url+item)
             yield Request(url=self.base_url+item, callback=self.fetch_item)
+
+
 
 
     def fetch_item(self, response):
         print "------------------------------"
         print response.url
+
         #BUYER = None
         AUCTIONTIME = None
         DEPOSITE = None
         #ATTORNEY = None
         #ATTYPHONE = None
-        #AUCTIONEER = None
+        AUCTIONEER = 'Sullivan'
         STREET = None
         CITY = None
         STATE = None
@@ -43,7 +48,8 @@ class SullivanSpider(scrapy.Spider):
         #COUNTRY = None
         #STYLE = None
         #YEARBUILD = None
-        #LIVINGAREA = None
+        LOTSIZE = None
+        LIVINGAREA = None
         ROOMS_TOTAL = None
         ROOMS_BED = None
         ROOMS_BATH = None
@@ -86,23 +92,31 @@ class SullivanSpider(scrapy.Spider):
 
         # fetching property_specs
         property_specs = prop_details.xpath("//p/font[last()]/text()").extract()
-        property_specs = [x.strip() for x in property_specs if x.strip()]
+        property_specs = ' '.join([x.strip() for x in property_specs if x.strip()])
 
 
+        # fetching property_specs
+        property_specs = property_specs.encode('ascii','ignore')
+        # fetching bedrooms
+        if re.findall(r'\d*\.*\d*\s*bedrooms?', property_specs):
+            ROOMS_BED = re.findall(r'\d*\.*\d*\s*bedrooms?', property_specs)[0].split(" ")[0]
         # fetching rooms
-        for x in property_specs:
-            # fetching bedrooms
-            if re.findall(r'\d*\.*\d*\s*bedrooms?', x):
-                ROOMS_BED = re.findall(r'\d*\.*\d*\s*bedrooms?', x)[0].split(" ")[0]
-            # fetching rooms
-            elif re.findall(r'\d*\.*\d*\s*rooms?', x):
-                ROOMS_TOTAL = re.findall(r'\d*\.*\d*\s*rooms?', x)[0].split(" ")[0]
-            elif "bath" in x:
-                if "full" in x or "half" in x:
-                    ROOMS_BATH = re.findall(r'\d*\.*\d*\s*full', x)[0].split(" ")[0]
-                    ROOMS_HALFBATH = re.findall(r'\d*\.*\d*\s*half baths?', x)[0].split(" ")[0]
-                else:
-                    ROOMS_BATH = re.findall(r'\d*\.*\d*\s*baths?', x)[0].split(" ")[0]
+        if re.findall(r'\d*\.*\d*\s*rooms?', property_specs):
+            ROOMS_TOTAL = re.findall(r'\d*\.*\d*\s*rooms?', property_specs)[0].split(" ")[0]
+        # fetching bathrooms
+        if "bath" in property_specs:
+            if "full" in property_specs or "half" in property_specs:
+                ROOMS_BATH = re.findall(r'\d*\.*\d*\s*full', property_specs)[0].split(" ")[0]
+                ROOMS_HALFBATH = re.findall(r'\d*\.*\d*\s*half baths?', property_specs)[0].split(" ")[0]
+            else:
+                ROOMS_BATH = re.findall(r'\d*\.*\d*\s*baths?', property_specs)[0].split(" ")[0]
+        # fetching lotsize
+        if re.findall(r'(\d*,\d*)\s*sf\s*lot', property_specs):
+            LOTSIZE = re.findall(r'(\d*,\d*)\s*sf\s*lot',property_specs)[0].replace(',', '')
+        # fetching LIVINGAREA
+        if re.findall(r'(\d*,\d*)\s*sf\s*liv\s*sp', property_specs):
+            LIVINGAREA = re.findall(r'(\d*,\d*)\s*sf\s*liv\s*sp', property_specs)[0].replace(',', '')
+
 
         # fetching terms_of_sale
         terms_of_sale = auction_details.xpath("//td/p[last()]//text()").extract()
@@ -120,6 +134,9 @@ class SullivanSpider(scrapy.Spider):
                          ROOMS_BATH = ROOMS_BATH,
                          ROOMS_HALFBATH = ROOMS_HALFBATH,
                          DEPOSITE = DEPOSITE,
+                         AUCTIONEER = AUCTIONEER,
+                         LOTSIZE = LOTSIZE,
+                         LIVINGAREA = LIVINGAREA,
                          )
         print "\n***********ITEM"
         print item

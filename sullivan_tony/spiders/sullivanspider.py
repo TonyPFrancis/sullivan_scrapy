@@ -46,7 +46,7 @@ class SullivanSpider(scrapy.Spider):
         STATE = None
         #ZIPCODE = None
         #COUNTRY = None
-        #STYLE = None
+        STYLE = None
         #YEARBUILD = None
         LOTSIZE = None
         LIVINGAREA = None
@@ -89,6 +89,13 @@ class SullivanSpider(scrapy.Spider):
 
         # fetching AUCTIONTIME
         AUCTIONDATE, AUCTIONTIME = self.find_date_n_time(auction_info)
+
+        # fetching style
+        for x in prop_details.xpath("//p/font[1]/b/font[1]/text()").extract():
+             if CITY.lower() in x.lower():
+                 STYLE = x.lower().encode('ascii', 'ignore')
+                 STYLE = re.findall(CITY.lower()+r'\s*-?\s*(.*)', STYLE, re.I)[0].strip()
+
 
         # fetching property_specs
         property_specs = prop_details.xpath("//p/font[last()]/text()").extract()
@@ -137,6 +144,7 @@ class SullivanSpider(scrapy.Spider):
                          AUCTIONEER = AUCTIONEER,
                          LOTSIZE = LOTSIZE,
                          LIVINGAREA = LIVINGAREA,
+                         STYLE = STYLE,
                          )
         print "\n***********ITEM"
         print item

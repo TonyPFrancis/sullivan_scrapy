@@ -16,12 +16,13 @@ class SullivanTonyPipeline(object):
         sql = """
                     INSERT INTO forclosure_master(
                         auctiondt, auctiontm, propaddr, propcity, propstate, deposit, totalrooms, bedrooms,
-                        bathrooms, halfbaths, auctioneer, lotsize, livingarea)
-                    VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")""" % \
+                        bathrooms, halfbaths, auctioneer, lotsize, livingarea, style)
+                    VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")""" % \
                     (
                         item['AUCTIONDATE'], item['AUCTIONTIME'], item['STREET'], item['CITY'], item['STATE'],
                         item['DEPOSITE'], item['ROOMS_TOTAL'], item['ROOMS_BED'], item['ROOMS_BATH'],
-                        item['ROOMS_HALFBATH'], item['AUCTIONEER'], item['LOTSIZE'], item['LIVINGAREA']
+                        item['ROOMS_HALFBATH'], item['AUCTIONEER'], item['LOTSIZE'], item['LIVINGAREA'],
+                        item['STYLE']
                     )
         cursor.execute(sql)
         db.commit()
